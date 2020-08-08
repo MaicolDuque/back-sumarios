@@ -3,15 +3,20 @@
 // const rp = require('request-promise');
 // const cheerio = require('cheerio');
 // const fs = require('fs');
+require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
-
+const passport = require('passport');
 const { PORT } = require('./config');
 const routesConfig = require('./routes');
 
 app.use(bodyParser.urlencoded({ extended: false, limit: '50mb' }));
 app.use(bodyParser.json({ limit: '50mb' }));
+
+app.use(passport.initialize());
+app.use(passport.session());
+
 
 routesConfig(app);
 // const URL = 'https://revistas.elpoli.edu.co/index.php/pol/issue/archive'; 
