@@ -4,6 +4,6 @@ const auth = require('./auth');
 
 module.exports = (app) => {
   app.use('/api/scraping', scraping);
-  app.use('/', user);
+  app.use('/api/users', user);
   app.use('/auth', auth);
 }

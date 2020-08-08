@@ -8,7 +8,10 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
 const passport = require('passport');
+const mongoose = require('mongoose');
+
 const { PORT } = require('./config');
+const { mongo } = require('./config');
 const routesConfig = require('./routes');
 
 app.use(bodyParser.urlencoded({ extended: false, limit: '50mb' }));
@@ -16,6 +19,17 @@ app.use(bodyParser.json({ limit: '50mb' }));
 
 app.use(passport.initialize());
 app.use(passport.session());
+
+
+// Connect to MongoDB
+mongoose.connect(mongo.uri, {  useCreateIndex: true, useUnifiedTopology: true, useNewUrlParser: true });
+mongoose.connection.on('error', (err) => {
+  console.error('Error', 'MongoDB connection error', {
+    data: err,
+    time: new Date().toISOString(),
+  });
+  process.exit(-1);
+});
 
 
 routesConfig(app);

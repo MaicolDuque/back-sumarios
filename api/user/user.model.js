@@ -12,11 +12,8 @@ const UserSchema = new Schema({
     trim: true,
     required: true
   },
-  role: { type: String, default: 'user' },
-  password: {
-    type: String,
-    required: true
-  },
+  role: { type: String, default: 'editor' },
+  password: { type: String },
   provider: String,
   urlMagazine: { type: String, required: true }
 }, { timestamps: true });
