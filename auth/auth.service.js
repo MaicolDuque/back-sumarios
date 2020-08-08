@@ -11,15 +11,14 @@ function isAuth(req, res, next) {
   if (req.query && typeof req.headers.authorization === 'undefined' && req.cookies) {
     const { token } = req.cookies;
     req.headers.authorization = `Bearer ${token}`;
-  }
-
-  jwt.verify(req.headers.authorization, process.env.SECRETS_SESSION, (err, authData) => {
+  }  
+  const token = req.headers.authorization.split(' ')[1];
+  jwt.verify(token, 'secreto', { algorithm: 'RS256' }, (err, authData) => {
     if (err) {
-      res.sendStatus(403);
+      res.send(err);
     } else {
-      console.log("authData");
-      console.log(authData);
-      return req.authData = authData;
+      console.log("OK")
+      next();
     }
   })
 }
@@ -28,9 +27,9 @@ function isAuth(req, res, next) {
 * Returns a jwt token signed by the app secret
 */
 function signToken(id) {
-  return jwt.sign({ _id: id }, process.env.SECRETS_SESSION, {
-    expiresIn: 60 * 60 * 5,
+  return jwt.sign({ _id: id, name: 'maicol' }, 'secreto', {
+    expiresIn: '1h'
   });
 }
 
-module.exports = { signToken } 
+module.exports = { signToken, isAuth } 
