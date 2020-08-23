@@ -1,11 +1,11 @@
 const { Router } = require('express');
 
-// const User = require('../api/user/user.model');
+const User = require('../api/user/user.model');
 const authGoogle = require('./google/passport');
 const configPassportGoogle = require('./google');
 
 // Passport Configuration
-authGoogle.setup();
+authGoogle.setup(User);
 
 const router = new Router();
 
