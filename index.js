@@ -3,15 +3,14 @@
 // const rp = require('request-promise');
 // const cheerio = require('cheerio');
 // const fs = require('fs');
-require('dotenv').config();
+// require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
 const passport = require('passport');
 const mongoose = require('mongoose');
 
-const { PORT } = require('./config');
-const { mongo } = require('./config');
+const configDB = require('./db');
 const routesConfig = require('./routes');
 
 app.use(bodyParser.urlencoded({ extended: false, limit: '50mb' }));
@@ -20,19 +19,10 @@ app.use(bodyParser.json({ limit: '50mb' }));
 app.use(passport.initialize());
 app.use(passport.session());
 
-
-// Connect to MongoDB
-mongoose.connect(mongo.uri, {  useCreateIndex: true, useUnifiedTopology: true, useNewUrlParser: true });
-mongoose.connection.on('error', (err) => {
-  console.error('Error', 'MongoDB connection error', {
-    data: err,
-    time: new Date().toISOString(),
-  });
-  process.exit(-1);
-});
-
-
+configDB(mongoose);
 routesConfig(app);
+
+module.exports = app
 // const URL = 'https://revistas.elpoli.edu.co/index.php/pol/issue/archive'; 
 
 // fs.readFile('test.html', 'utf8', function (err,html) {
@@ -63,4 +53,4 @@ routesConfig(app);
   
 // });
 
-app.listen(PORT, () => console.log(`Server runnig in port: ${PORT}`) );
+
