@@ -61,10 +61,21 @@ function destroy(req, res) {
     .catch(err => res.status(500).send(err))
 }
 
+/**
+ * Update user
+ */
+function update(req, res) {  
+  const id = req.params.id;
+  return User.findByIdAndUpdate(id, req.body, { new: true }).exec()
+    .then(user => res.status(200).json(user))
+    .catch(err => res.status(500).send(err))
+}
+
 
 module.exports = {
   index,
   create,
   destroy,
-  show
+  show,
+  update
 };

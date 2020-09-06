@@ -6,6 +6,7 @@ const router = new Router();
 router.get('/', isAuth , controller.index );
 router.post('/', isAuth , controller.create )
 router.get('/:id', isAuth , controller.show )
+router.put('/:id', isAuth , controller.update )
 router.delete('/:id', isAuth , controller.destroy )
 router.get('/segura', isAuth ,  (req, res) => res.send('Example segura!'))
 router.get('/test', (req, res) => res.send('Example Home page!'))
