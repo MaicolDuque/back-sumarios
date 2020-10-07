@@ -3,7 +3,6 @@ const { mongo } = require('./config');
 
 module.exports = (mongoose) => {
   // Connect to MongoDB
-  console.log(mongo.uri)
   mongoose.connect(mongo.uri, {  useCreateIndex: true, useUnifiedTopology: true, useNewUrlParser: true, useFindAndModify: false });
   mongoose.connection.on('error', (err) => {
     console.error('Error', 'MongoDB connection error', {

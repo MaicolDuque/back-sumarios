@@ -24,7 +24,7 @@ function index(req, res) {
 }
 
 
-function show(req, res) {  
+function show(req, res) {
   return User.findById(req.params.id).exec()
     .then(users => res.status(200).json(users))
     .catch(handleError(res));
@@ -36,9 +36,7 @@ function show(req, res) {
  */
 function create(req, res) {
   const newUser = new User(req.body);
-  newUser.provider = 'google';
-  newUser.role = 'editor';
-
+  console.log(newUser)
   return newUser.save()
     .then((user) => {
       const token = jwt.sign(

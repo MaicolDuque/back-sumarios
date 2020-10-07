@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const UserSchema = new Schema({
-  name: String,
+  mg_name: String,
   email: {
     type: String,
     lowercase: true,
@@ -12,10 +12,11 @@ const UserSchema = new Schema({
     trim: true,
     required: true
   },
-  role: { type: String, default: 'editor' },
-  password: { type: String },
-  provider: String,
-  urlMagazine: { type: String, required: true }
+  mg_status: Boolean,
+  mg_role: { type: String, default: 'editor' },
+  mg_password: { type: String },
+  mg_urlMagazine: { type: String, required: true },
+  mg_contact_lists: [{ type: Schema.ObjectId, ref: "ContactList" }]
 }, { timestamps: true });
 
-module.exports = mongoose.model('User', UserSchema); 
+module.exports = mongoose.model('User', UserSchema);
