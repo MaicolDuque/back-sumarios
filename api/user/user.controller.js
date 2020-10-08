@@ -18,7 +18,7 @@ function handleError(res, statusCode) {
  * restriction: 'admin'
  */
 function index(req, res) {
-  return User.find({}).exec()
+  return User.find({}).populate({ path: 'mg_contact_lists', model: 'ContactList' }).exec()
     .then(users => res.status(200).json(users))
     .catch(handleError(res));
 }

@@ -20,6 +20,8 @@ const all = {
     session: process.env.SECRETS_SESSION,
   },
 
+  userRoles: ['editor', 'admin'],
+
   // Credentials to login with Google and passport
   google: {
     clientID: process.env.CLIENT_ID,
