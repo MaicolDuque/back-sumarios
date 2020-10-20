@@ -4,10 +4,10 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 
 function validateUserExist(User, profile, done) {
   const email = profile._json.email;
-  console.log(email)  
+  console.log(email)
   User.findOne({ email }).exec()
-    .then((user) => {      
-      if (!user) {        
+    .then((user) => {
+      if (!user) {
         return done(null, false, {
           message: 'This email is not registered.',
         });

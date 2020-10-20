@@ -1,5 +1,5 @@
 
-const ContactList = require("./contact-list.model");
+const ContactList = require("./contact.model");
 
 function validationError(res, statusCode) {
   const statusCodeLocal = statusCode || 422;
@@ -33,20 +33,7 @@ function create(req, res) {
   .catch(validationError(res));
 }
 
-
-/**
- * Delete ContactList
- */
-function destroy(req, res) {
-  // return res.json({err:"sdsdsdsd"});
-  return ContactList.findByIdAndDelete(req.params.id).exec()
-    .then(res => res.status(200).json())
-    .catch(err => res.status(500).send(err))
-}
-
-
 module.exports = {
   index,
-  create,
-  destroy
+  create
 }
