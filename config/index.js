@@ -9,6 +9,9 @@ const all = {
   // Server port
   PORT: process.env.PORT || 3000,
 
+  // URL front
+  URL_FRONT: process.env.URL_FRONT,
+
   // Server IP
   ip: process.env.IP || '127.0.0.1',
 
