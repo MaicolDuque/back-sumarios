@@ -30,6 +30,32 @@ function show(req, res) {
     .catch(handleError(res));
 }
 
+/**
+ * 
+ * Verify user
+ */
+function verify(req, res) {
+  console.log(req.body)
+  return User.findOne(req.body).exec()
+    .then(user => {
+      if (user.mg_status) {
+        const token = jwt.sign(
+          { _id: user._id, email: user.email },
+          config.secrets.session,
+          { expiresIn: 60 * 60 * 5 },
+        );
+        res.json({ token });
+      }else{
+        res.json({
+          msg: 'Usuario no activo.'
+        })
+      }
+    })
+    .catch(res.json({
+      msg: 'No se encontró usuario.'
+    }));
+}
+
 
 /**
  * Creates a new user
@@ -62,7 +88,7 @@ function destroy(req, res) {
 /**
  * Update user
  */
-function update(req, res) {  
+function update(req, res) {
   const id = req.params.id;
   return User.findByIdAndUpdate(id, req.body, { new: true }).exec()
     .then(user => res.status(200).json(user))
@@ -75,5 +101,6 @@ module.exports = {
   create,
   destroy,
   show,
-  update
+  update,
+  verify
 };

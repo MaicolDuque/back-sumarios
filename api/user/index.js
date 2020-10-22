@@ -4,7 +4,8 @@ const controller = require('./user.controller');
 const router = new Router();
 
 router.get('/test', (req, res) => res.send('Example Home page!'))
-router.get('/', isAuth() , controller.index );
+router.get('/',  controller.index );
+router.post('/verify/', controller.verify)
 router.post('/', isAuth() , controller.create )
 router.get('/:id', isAuth() , controller.show )
 router.put('/:id', isAuth() , controller.update )

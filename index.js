@@ -7,11 +7,14 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
+const cors = require('cors');
 const passport = require('passport');
 const mongoose = require('mongoose');
 
 const configDB = require('./db');
 const routesConfig = require('./routes');
+
+app.use(cors());
 
 app.use(bodyParser.urlencoded({ extended: false, limit: '50mb' }));
 app.use(bodyParser.json({ limit: '50mb' }));
