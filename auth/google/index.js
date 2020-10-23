@@ -33,6 +33,13 @@ router.get('/failed', (req, res) => {
   });
 })
 
+// When logout, redirect to client
+router.get('/logout', (req, res) => {
+  req.session = null;
+  req.logout()
+  res.redirect(URL_FRONT)
+})
+
 // callback url upon successful google authentication
 router.get(
   '/callback',
@@ -41,7 +48,5 @@ router.get(
     res.redirect(URL_FRONT)
   }
 );
-
-
 
 module.exports = router;

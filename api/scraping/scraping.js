@@ -4,13 +4,13 @@ const rp = require('request-promise');
 const cheerio = require('cheerio');
 
 function getAllUrls($){  
-  const issues = $("#issues").html();    
+  const issues = $("#issues").html();
   const urlArticles = $('div',issues).children('div').map((i,e)=> {
     if($(e).children('h4').html()){
       return {
         url: $(e).children('h4').children('a').attr('href')
       }
-    }  
+    }
   }).get()
   console.log(urlArticles);
   return urlArticles;

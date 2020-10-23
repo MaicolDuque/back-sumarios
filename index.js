@@ -29,7 +29,7 @@ app.use(bodyParser.json({ limit: '50mb' }));
 
 // For an actual app you should configure this with an experation time, better keys, proxy and secure
 app.use(cookieSession({
-  name: 'tuto-session',
+  name: 'sumarios-app',
   keys: ['key1', 'key2']
 }))
 
