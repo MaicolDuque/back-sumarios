@@ -2,6 +2,14 @@
 
 const rp = require('request-promise');
 const cheerio = require('cheerio');
+const Volume = require('./volume.model');
+const User = require('../user/user.model');
+
+
+function handleError(res, statusCode) {
+  const statusCodeLocal = statusCode || 500;
+  return err => res.status(statusCodeLocal).send(err);
+}
 
 async function scraping(req, res) {
   const { url } = req.body;
@@ -70,8 +78,7 @@ async function getArticles(url) {
 //  ----------------------------------------------------------------------------------------
 
 // Retunr url volumes of magazine
-async function getUrlsVolumes(req, res) {
-  const { url } = req.body;
+async function getUrlsVolumes(url) {
   const html = await rp(url);
   const $ = cheerio.load(html);
   const issues = $("#issues").html();
@@ -83,11 +90,35 @@ async function getUrlsVolumes(req, res) {
       }
     }
   }).get()
-  console.log(urlVolumes);
-  res.send(urlVolumes)
+  return urlVolumes;
 }
 
-// Return articles ans quantity occurences the specific word
+// Update all volumes of magazine
+async function addVolumesMagazine(req, res) {
+  try {
+    const { _id, url } = req.body;
+    const urlsVolumes = await getUrlsVolumes(url);
+    const currentUrlvolumes = await User.findOne({ _id }, { mg_list_volumes: 1 }) //Retrieve current volumens of the magazine to only add new volumes
+      .populate({ path: 'mg_list_volumes', model: 'Volume' }).exec()
+    const onlyUrlVolumes = currentUrlvolumes.mg_list_volumes.map(volume => volume.url)
+    const newVolumes = urlsVolumes.filter(volume => !onlyUrlVolumes.includes(volume.url))
+    // return res.send(currentUrlvolumes)
+    const response = await Promise.all(newVolumes.map((volume) => {
+      const newVolume = new Volume(volume);
+      newVolume.save()
+        .then((vol) => {
+          return User.updateOne({ _id }, { $push: { mg_list_volumes: vol._id } }, { new: true }).exec()
+        })
+        .then(res => res)
+        .catch(handleError(res));
+    }))
+    res.send(response)
+  } catch (error) {
+    res.send(error)
+  }
+}
+
+// Return articles and quantity occurences the specific word
 async function getArticlesByVolume(req, res) {
   const { url, keyword } = req.body;
   const html = await rp(url);
@@ -224,5 +255,6 @@ module.exports = {
   getUrlsVolumes,
   getArticlesByVolume,
   getArticlesByUrlHtml,
-  makeIndexacion
+  makeIndexacion,
+  addVolumesMagazine
 }
