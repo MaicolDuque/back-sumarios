@@ -7,15 +7,15 @@ function isAuth() {
   return (req, res, next) => {
     // allow access_token to be passed through query parameter as well
     if (req.query && req.query.hasOwnProperty('access_token')) {
-      req.headers.authorization = `Bearer ${req.query.access_token}`;
+      req.headers.token = `Bearer ${req.query.access_token}`;
     }
     // IE11 forgets to set Authorization header sometimes. Pull from cookie instead.
     if (req.query && typeof req.headers.authorization === 'undefined' && req.cookies) {
       const { token } = req.cookies;
-      req.headers.authorization = `Bearer ${token}`;
+      req.headers.token = `Bearer ${token}`;
     }
-    if (!req.headers.authorization) return res.status(403).end();
-    const token = req.headers.authorization.split(' ')[1];
+    if (!req.headers.token) return res.status(403).end();
+    const token = req.headers.token.split(' ')[1];
     jwt.verify(token, secrets.session, (err, authData) => {
       if (err) {
         res.status(401).send(err);

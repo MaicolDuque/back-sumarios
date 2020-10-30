@@ -14,7 +14,11 @@ const mongoose = require('mongoose');
 const configDB = require('./db');
 const routesConfig = require('./routes');
 
-app.use(cors());
+app.use(cors({
+    origin: "http://localhost:9042", // allow to server to accept request from different origin
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    credentials: true // allow session cookie from browser to pass through
+}));
 
 app.use(bodyParser.urlencoded({ extended: false, limit: '50mb' }));
 app.use(bodyParser.json({ limit: '50mb' }));
