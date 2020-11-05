@@ -33,7 +33,34 @@ function create(req, res) {
   .catch(validationError(res));
 }
 
+
+/**
+ * Search articles with a specific keyword
+ */
+async function searchArticles(req, res) {
+  try {
+    const { keyword } = req.body
+    const articles = await Article.find({}).exec()
+    console.log(articles.length)
+    const ariclesWithKeyword = articles.filter( article => article.list_keywords[0] && article.list_keywords[0][keyword] ) //Select only the articles that have the keyword
+    const infoArticlesOnlyKeyword = ariclesWithKeyword.map( article => {
+      return {
+        _id: article._id,
+        urlHtml: article.urlHtml,
+        title: article.title,
+        authors: article.authors,
+        list_keywords: { [keyword]: article.list_keywords[0][keyword] }
+      }
+    })
+    const articlesSorted = infoArticlesOnlyKeyword.sort( ( a, b) => b.list_keywords[keyword] - a.list_keywords[keyword])  // Articles sorted DESC
+    console.log(ariclesWithKeyword.length)
+    res.send(articlesSorted)
+  } catch (error) {
+    return handleError(res)
+  }
+}
 module.exports = {
   index,
-  create
+  create,
+  searchArticles
 }

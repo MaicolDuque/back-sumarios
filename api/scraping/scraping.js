@@ -55,9 +55,9 @@ async function getUrlsVolumes(url) {
 // Update all volumes of magazine and add all articles to volume
 async function addVolumesMagazine(req, res) {
   try {
-    const { _id, url } = req.body;
-    const urlsVolumes = await getUrlsVolumes(url);
-    const currentUrlvolumes = await User.findOne({ _id }, { mg_list_volumes: 1 }) // Retrieve current volumens of the magazine to only add new volumes
+    const { idEditor, urlMagazine } = req.body;
+    const urlsVolumes = await getUrlsVolumes(urlMagazine);
+    const currentUrlvolumes = await User.findOne({ _id: idEditor }, { mg_list_volumes: 1 }) // Retrieve current volumens of the magazine to only add new volumes
       .populate({ path: 'mg_list_volumes', model: 'Volume' }).exec()
     const onlyUrlVolumes = currentUrlvolumes.mg_list_volumes.map(volume => volume.url)
     const newVolumes = urlsVolumes.filter(volume => !onlyUrlVolumes.includes(volume.url))
@@ -98,8 +98,8 @@ async function addArticlesByVolume(urlVolume) {
 // Make indexacion html page with a specific keyword.
 async function makeIndexacion(req, res) {
   try {
-    const { id } = req.body
-    const urlArticles = await getArticlesByIdVolume(id)
+    const { idVolume } = req.body
+    const urlArticles = await getArticlesByIdVolume(idVolume)
     // return res.send(urlArticles)
     const indexarArticles = await Promise.all(urlArticles.list_articles.map(async (article) => {
       const html = await rp(article.urlHtml);
