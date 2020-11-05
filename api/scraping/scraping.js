@@ -15,21 +15,40 @@ function handleError(res, statusCode) {
 
 async function getArticlesByUrlHtml(req, res) {
   const urls = [
-    "https://revistas.elpoli.edu.co/index.php/pol/article/view/1086/1516"
+    "https://revistas.elpoli.edu.co/index.php/pol/article/view/1702/1415"
   ]
-  const { keyword } = req.body
-  const sizas = await Promise.all(urls.map(async (url) => {
+  const { url } = req.body
+  // const sizas = await Promise.all(urls.map(async (url) => {
     const html = await rp(url);
     const $ = cheerio.load(html);
     const content = $("#body").text().replace(/([\,.;()])|\r?\t?/gi, '').trim().toUpperCase().replace(/\n/gi, ' ')
+    const resumen = $('b > span').attr('lang', 'ES').text()
     // const arrayWords = content.split(' ');
     // const arrayWordsFilter = arrayWords.filter(word => !commonWords.includes(word)) // Eliminar palabras a no filtrar
     // const pattern = new RegExp('\\b' + keyword + '\\b', 'ig');
     // const quantity = (content.match(pattern) || []).length;
-    return { content }
-  }))
+    // return { content }
+  // }))
 
-  res.send(sizas)
+  res.send(resumen)
+}
+
+// Retrive url of articles by URL volume.
+async function testScrapingHtml(url) {
+  try {
+    const html = await rp(url);
+    const $ = cheerio.load(html);
+    const articles = $('.tocArticle').map(function (i, el) {
+      return {
+        urlHtml: $('.tocGalleys a', el).attr('href'),
+        title: $('.tocTitle a', el).text(),
+        authors: $('.tocAuthors', el).text().trim().replace(/\t/g, '')
+      }
+    }).get();
+    return articles
+  } catch (error) {
+    return Error(error);
+  }
 }
 
 
