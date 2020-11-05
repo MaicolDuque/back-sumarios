@@ -32,6 +32,18 @@ function show(req, res) {
 
 
 /**
+ * Return all volumes by id User
+ */
+function getVolumesByUserId(req, res) {
+  const { id } = req.params
+  return User.findOne({ _id: id }, { mg_list_volumes: 1, _id: 0 })
+        .populate({ select: { url: 1, description: 1 }, path: 'mg_list_volumes', model: 'Volume' }).exec()
+    .then(users => res.status(200).json(users))
+    .catch(handleError(res));
+}
+
+
+/**
  * Creates a new user
  */
 function create(req, res) {
@@ -62,7 +74,7 @@ function destroy(req, res) {
 /**
  * Update user
  */
-function update(req, res) {  
+function update(req, res) {
   const id = req.params.id;
   return User.findByIdAndUpdate(id, req.body, { new: true }).exec()
     .then(user => res.status(200).json(user))
@@ -75,5 +87,6 @@ module.exports = {
   create,
   destroy,
   show,
-  update
+  update,
+  getVolumesByUserId
 };

@@ -4,9 +4,9 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const ArticleSchema = new Schema({
-  url: { type: String, required: true },
-  title:{ type: String, required: true },
-  description:{ type: String, required: true },
+  urlHtml: { type: String, required: true },
+  title:{ type: String },
+  description:{ type: String },
   authors:{ type: String },
   list_keywords: []
 }, { timestamps: true });

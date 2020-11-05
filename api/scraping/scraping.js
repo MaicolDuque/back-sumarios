@@ -4,6 +4,8 @@ const rp = require('request-promise');
 const cheerio = require('cheerio');
 const Volume = require('./volume.model');
 const User = require('../user/user.model');
+const Article = require('../article/article.model')
+const { commonWords } = require('../../config')
 
 
 function handleError(res, statusCode) {
@@ -11,68 +13,25 @@ function handleError(res, statusCode) {
   return err => res.status(statusCodeLocal).send(err);
 }
 
-async function scraping(req, res) {
-  const { url } = req.body;
-  const html = await rp(url);
-  const $ = cheerio.load(html);
-  console.log(req.body)
-  const urls = getAllUrls($);
-  const result = await Promise.all(urls.map(async (urlVolume) => {
-    const { urlHtml } = urlVolume
-    const articles = await getArticles(urlVolume)
-    // console.log(articles)
-    return {
-      // url,
-      // // test: "ssss"
-      articles
-      // urlHtml: articles.urlHtml
-    }
+async function getArticlesByUrlHtml(req, res) {
+  const urls = [
+    "https://revistas.elpoli.edu.co/index.php/pol/article/view/1086/1516"
+  ]
+  const { keyword } = req.body
+  const sizas = await Promise.all(urls.map(async (url) => {
+    const html = await rp(url);
+    const $ = cheerio.load(html);
+    const content = $("#body").text().replace(/([\,.;()])|\r?\t?/gi, '').trim().toUpperCase().replace(/\n/gi, ' ')
+    // const arrayWords = content.split(' ');
+    // const arrayWordsFilter = arrayWords.filter(word => !commonWords.includes(word)) // Eliminar palabras a no filtrar
+    // const pattern = new RegExp('\\b' + keyword + '\\b', 'ig');
+    // const quantity = (content.match(pattern) || []).length;
+    return { content }
   }))
 
-  // const onlyUrls = result.map(articles => {
-  //   return articles.articles.map(article => article.urlHtml)
-  // })
-
-  res.send(result);
+  res.send(sizas)
 }
 
-function getAllUrls($) {
-  const issues = $("#issues").html();
-  const urlArticles = $('div', issues).children('div').map((i, e) => {
-    if ($(e).children('h4').html()) {
-      return {
-        url: $(e).children('h4').children('a').attr('href')
-      }
-    }
-  }).get()
-  console.log(urlArticles);
-  return urlArticles;
-}
-
-async function getArticles(url) {
-  // const { url } = req.body;
-  const html = await rp(url);
-  const $ = cheerio.load(html);
-  const articles = $('.tocArticle').map(function (i, el) {
-    return {
-      urlHtml: $('.tocGalleys a', el).attr('href'),
-      title: $('.tocTitle a', el).text(),
-      authors: $('.tocAuthors', el).text().trim().replace(/\t/g, '')
-    }
-  }).get();
-
-  // const result = await Promise.all(articles.map(async (article) => {
-  //   const { urlHtml } = article
-  //   const countKeyword = await searchKeyWord(urlHtml, 'control')
-  //   return {
-  //     urlHtml,
-  //     countKeyword
-  //   }
-  // }))
-  // console.log(issues)
-  // res.send(result);
-  return articles
-}
 
 
 //  ----------------------------------------------------------------------------------------
@@ -93,20 +52,22 @@ async function getUrlsVolumes(url) {
   return urlVolumes;
 }
 
-// Update all volumes of magazine
+// Update all volumes of magazine and add all articles to volume
 async function addVolumesMagazine(req, res) {
   try {
     const { _id, url } = req.body;
     const urlsVolumes = await getUrlsVolumes(url);
-    const currentUrlvolumes = await User.findOne({ _id }, { mg_list_volumes: 1 }) //Retrieve current volumens of the magazine to only add new volumes
+    const currentUrlvolumes = await User.findOne({ _id }, { mg_list_volumes: 1 }) // Retrieve current volumens of the magazine to only add new volumes
       .populate({ path: 'mg_list_volumes', model: 'Volume' }).exec()
     const onlyUrlVolumes = currentUrlvolumes.mg_list_volumes.map(volume => volume.url)
     const newVolumes = urlsVolumes.filter(volume => !onlyUrlVolumes.includes(volume.url))
-    // return res.send(currentUrlvolumes)
+    // return res.send(newVolumes)
     const response = await Promise.all(newVolumes.map((volume) => {
       const newVolume = new Volume(volume);
       newVolume.save()
-        .then((vol) => {
+        .then(async (vol) => {
+          let idsArticles = await addArticlesByVolume(volume.url)
+          Volume.updateOne({ _id: vol._id }, { $push: { list_articles: { $each: idsArticles } } }).exec()  // Add articles to volume
           return User.updateOne({ _id }, { $push: { mg_list_volumes: vol._id } }, { new: true }).exec()
         })
         .then(res => res)
@@ -118,125 +79,41 @@ async function addVolumesMagazine(req, res) {
   }
 }
 
-// Return articles and quantity occurences the specific word
-async function getArticlesByVolume(req, res) {
-  const { url, keyword } = req.body;
-  const html = await rp(url);
-  const $ = cheerio.load(html);
-  const articles = $('.tocArticle').map(function (i, el) {
-    return {
-      urlHtml: $('.tocGalleys a', el).attr('href'),
-      title: $('.tocTitle a', el).text(),
-      authors: $('.tocAuthors', el).text().trim().replace(/\t/g, '')
-    }
-  }).get();
-
-  const result = await Promise.all(articles.map(async (article) => {
-    const { urlHtml, title, authors } = article
-    const countKeyword = await searchKeyWord(urlHtml, keyword)
-    return {
-      urlHtml,
-      title,
-      authors,
-      countKeyword
-    }
-  }))
-
-  const filterResult = result.filter(article => article.countKeyword.quantity > 0)
-  res.send(filterResult);
-}
-
-// Make scraping html page with a specific keyword.
-async function searchKeyWord(url, keyword) {
-  const html = await rp(url);
-  const $ = cheerio.load(html);
-  const content = $("#body").text().replace(/\t/g, '');
-  const pattern = new RegExp('\\b' + keyword + '\\b', 'ig');
-  const quantity = (content.match(pattern) || []).length;
-  return { keyword, quantity }
-}
-
-async function getArticlesByUrlHtml(req, res) {
-  const urls = [
-    "https://revistas.elpoli.edu.co/index.php/pol/article/view/1546/1349",
-    "https://revistas.elpoli.edu.co/index.php/pol/article/view/1552/1351",
-    "https://revistas.elpoli.edu.co/index.php/pol/article/view/1554/1352",
-    "https://revistas.elpoli.edu.co/index.php/pol/article/view/1588/1353",
-    "https://revistas.elpoli.edu.co/index.php/pol/article/view/1611/1354",
-    "https://revistas.elpoli.edu.co/index.php/pol/article/view/1620/1379",
-    "https://revistas.elpoli.edu.co/index.php/pol/article/view/1637/1356",
-    "https://revistas.elpoli.edu.co/index.php/pol/article/view/1506/1348",
-    "https://revistas.elpoli.edu.co/index.php/pol/article/view/1651/1359",
-    "https://revistas.elpoli.edu.co/index.php/pol/article/view/1550/1350"
-  ]
-  const { keyword } = req.body
-  const sizas = await Promise.all(urls.map(async (url) => {
-    const html = await rp(url);
-    const $ = cheerio.load(html);
-    const content = $("#body").text().replace(/\t/g, '');
-    const pattern = new RegExp('\\b' + keyword + '\\b', 'ig');
-    const quantity = (content.match(pattern) || []).length;
-    return { keyword, quantity }
-  }))
-
-  res.send(sizas)
-}
-
-
-// Indexar articles to after doing search by specific kwyword
-async function indexarArticlesByVolume(req, res) {
-  const { url, keyword } = req.body;
-  const html = await rp(url);
-  const $ = cheerio.load(html);
-  const articles = $('.tocArticle').map(function (i, el) {
-    return {
-      urlHtml: $('.tocGalleys a', el).attr('href'),
-      title: $('.tocTitle a', el).text(),
-      authors: $('.tocAuthors', el).text().trim().replace(/\t/g, '')
-    }
-  }).get();
-
-  const result = await Promise.all(articles.map(async (article) => {
-    const { urlHtml, title, authors } = article
-    const countKeyword = await searchKeyWord(urlHtml, keyword)
-    return {
-      urlHtml,
-      title,
-      authors,
-      countKeyword
-    }
-  }))
-
-  const filterResult = result.filter(article => article.countKeyword.quantity > 0)
-  res.send(filterResult);
+//Add articles by volume and return identifiers to add info in the respective volume
+async function addArticlesByVolume(urlVolume) {
+  try {
+    const listArticlesByVolume = await getArticlesByUrlVolume(urlVolume)
+    const idsArticles = await Promise.all(listArticlesByVolume.map(article => {
+      let newArticle = new Article(article);
+      return newArticle.save()
+        .then(data => data._id)
+        .catch(handleError)
+    }))
+    return idsArticles
+  } catch (error) {
+    handleError(res)
+  }
 }
 
 // Make indexacion html page with a specific keyword.
 async function makeIndexacion(req, res) {
-  const { url } = req.body
-  const urls = [
-    "https://revistas.elpoli.edu.co/index.php/pol/article/view/1546/1349",
-    "https://revistas.elpoli.edu.co/index.php/pol/article/view/1552/1351",
-    "https://revistas.elpoli.edu.co/index.php/pol/article/view/1554/1352",
-    "https://revistas.elpoli.edu.co/index.php/pol/article/view/1588/1353",
-    "https://revistas.elpoli.edu.co/index.php/pol/article/view/1611/1354",
-    "https://revistas.elpoli.edu.co/index.php/pol/article/view/1620/1379",
-    "https://revistas.elpoli.edu.co/index.php/pol/article/view/1637/1356",
-    "https://revistas.elpoli.edu.co/index.php/pol/article/view/1506/1348",
-    "https://revistas.elpoli.edu.co/index.php/pol/article/view/1651/1359",
-    "https://revistas.elpoli.edu.co/index.php/pol/article/view/1550/1350"
-  ]
-  const sizas = await Promise.all(urls.map(async (url) => {
-    const commonWords = ['A', 'DE', 'DEL', 'DESDE', 'COMO', 'CÓMO', ',', 'EN', 'LA', 'UN', 'LOS', 'LAS', 'ESTE', 'EL', 'Y', 'QUE', 'LO', 'SE', 'PARA', 'THE', 'CON', 'CONTRA', 'POR', '-']
-    const html = await rp(url);
-    const $ = cheerio.load(html);
-    const content = $("#body").text().replace(/(,)|\r?\n?\t?/gi, '').trim().toUpperCase(); //replace(/\t/g, '')
-    const arrayWords = content.split(' ');
-    const arrayWordsFilter = arrayWords.filter(word => !commonWords.includes(word)) // Eliminar palabras a no filtrar
-    const objectWords = calculateNumberTimesRepeat(arrayWordsFilter);
-    return { objectWords }
-  }))
-  res.send(sizas)
+  try {
+    const { url } = req.body
+    const urlArticles = await getArticlesByUrlVolume(url)
+    // return res.send(urlArticles)
+    const indexarArticles = await Promise.all(urlArticles.map(async (article) => {
+      const html = await rp(article.urlHtml);
+      const $ = cheerio.load(html);
+      const content = $("#body").text().replace(/([\,.;()])|\r?\t?/gi, '').trim().toUpperCase().replace(/\n/gi, ' ')
+      const arrayWords = content.split(' ');
+      const arrayWordsFilter = arrayWords.filter(word => !commonWords.includes(word)) // Eliminar palabras a no filtrar
+      const objectWords = calculateNumberTimesRepeat(arrayWordsFilter);
+      return { ...objectWords }
+    }))
+    res.send(indexarArticles)
+  } catch (error) {
+    handleError(res)
+  }
 }
 
 function calculateNumberTimesRepeat(arrayWords) {
@@ -250,10 +127,28 @@ function calculateNumberTimesRepeat(arrayWords) {
   }, {})
 }
 
+// Retrive url of articles by URL volume.
+async function getArticlesByUrlVolume(url) {
+  try {
+    const html = await rp(url);
+    const $ = cheerio.load(html);
+    const articles = $('.tocArticle').map(function (i, el) {
+      return {
+        urlHtml: $('.tocGalleys a', el).attr('href'),
+        title: $('.tocTitle a', el).text(),
+        authors: $('.tocAuthors', el).text().trim().replace(/\t/g, '')
+      }
+    }).get();
+    return articles
+  } catch (error) {
+    return Error(error);
+  }
+}
+
+
+
 module.exports = {
-  scraping,
   getUrlsVolumes,
-  getArticlesByVolume,
   getArticlesByUrlHtml,
   makeIndexacion,
   addVolumesMagazine
