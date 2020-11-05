@@ -16,7 +16,8 @@ const UserSchema = new Schema({
   mg_role: { type: String, default: 'editor' },
   mg_password: { type: String },
   mg_urlMagazine: { type: String, required: true },
-  mg_contact_lists: [{ type: Schema.Types.ObjectId, ref: "ContactList" }]
+  mg_contact_lists: [{ type: Schema.Types.ObjectId, ref: "ContactList" }],
+  mg_list_volumes: [{ type: Schema.Types.ObjectId, ref: "Volume" }]
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', UserSchema);
