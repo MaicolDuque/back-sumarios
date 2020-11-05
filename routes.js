@@ -10,9 +10,6 @@ module.exports = (app) => {
   app.use('/api/users', user);
   app.use('/auth', auth);
   app.use('/api/contact-list', contactList);
-<<<<<<< HEAD
   app.use('/api/contact', contact);
-=======
   app.use('/api/articles', article);
->>>>>>> feature/scraping
 }
