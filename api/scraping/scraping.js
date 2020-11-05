@@ -98,16 +98,17 @@ async function addArticlesByVolume(urlVolume) {
 // Make indexacion html page with a specific keyword.
 async function makeIndexacion(req, res) {
   try {
-    const { url } = req.body
-    const urlArticles = await getArticlesByUrlVolume(url)
+    const { id } = req.body
+    const urlArticles = await getArticlesByIdVolume(id)
     // return res.send(urlArticles)
-    const indexarArticles = await Promise.all(urlArticles.map(async (article) => {
+    const indexarArticles = await Promise.all(urlArticles.list_articles.map(async (article) => {
       const html = await rp(article.urlHtml);
       const $ = cheerio.load(html);
-      const content = $("#body").text().replace(/([\,.;()])|\r?\t?/gi, '').trim().toUpperCase().replace(/\n/gi, ' ')
+      const content = $("#body").text().replace(/([\,.;()$])|\r?\t?/gi, '').trim().toUpperCase().replace(/\n/gi, ' ')
       const arrayWords = content.split(' ');
       const arrayWordsFilter = arrayWords.filter(word => !commonWords.includes(word)) // Eliminar palabras a no filtrar
       const objectWords = calculateNumberTimesRepeat(arrayWordsFilter);
+      Article.updateOne({ _id: article._id }, { list_keywords: objectWords }).exec().catch(console.log) // Add keywords to respective article
       return { ...objectWords }
     }))
     res.send(indexarArticles)
@@ -145,11 +146,25 @@ async function getArticlesByUrlVolume(url) {
   }
 }
 
+// Retrive url of articles by ID volume.
+async function getArticlesByIdVolume(id) {
+  try {
+    // const { id } = req.body
+    const articles = await Volume.findOne({ _id: id }, { list_articles: 1 })
+      .populate({ path: 'list_articles', model: 'Article' }).exec()
+    // return res.send(articles)
+    return articles
+  } catch (error) {
+    return Error(error);
+  }
+}
+
 
 
 module.exports = {
   getUrlsVolumes,
   getArticlesByUrlHtml,
   makeIndexacion,
-  addVolumesMagazine
+  addVolumesMagazine,
+  getArticlesByIdVolume
 }
