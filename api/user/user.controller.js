@@ -17,9 +17,9 @@ function handleError(res, statusCode) {
  * Get list of users
  * restriction: 'admin'
  */
-const index = async (req, res) => {
-  await User.find({}).populate({ path: 'mg_contact_lists', model: 'ContactList' }).exec()
-    .then(users => { return res.status(200).json(users) })
+function index (req, res) {
+  return User.find({}).populate({ path: 'mg_contact_lists', model: 'ContactList' }).exec()
+    .then(users => res.status(200).json(users))
     .catch(handleError(res));
 }
 
@@ -35,9 +35,9 @@ function show(req, res) {
  * Verify user
  */
 
-const verifyTrue = async (req, res) => {
+function verifyTrue (req, res) {
   try {
-    await User.findOne(req.body).exec()
+    return User.findOne(req.body).exec()
       .then(user => {
         if (user.mg_status) {
           const token = jwt.sign(
@@ -45,9 +45,9 @@ const verifyTrue = async (req, res) => {
             config.secrets.session,
             { expiresIn: 60 * 60 * 5 },
           );
-          return res.json({ token: `Bearer ${token}` });
+          res.json({ token: `Bearer ${token}` });
         } else {
-          return res.json({
+          res.json({
             msg: 'Usuario no activo.'
           })
         }
@@ -75,7 +75,7 @@ function getVolumesByUserId(req, res) {
 /**
  * Creates a new user
  */
-const create = async (req, res) => {
+function create (req, res) {
   if(req.body !== ""){
     const newPubliser = {
       mg_role: 'editor',
