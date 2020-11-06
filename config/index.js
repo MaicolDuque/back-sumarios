@@ -9,6 +9,9 @@ const all = {
   // Server port
   PORT: process.env.PORT || 3000,
 
+  // URL front
+  URL_FRONT: process.env.URL_FRONT,
+
   // Server IP
   ip: process.env.IP || '127.0.0.1',
 
@@ -19,6 +22,11 @@ const all = {
   secrets: {
     session: process.env.SECRETS_SESSION,
   },
+
+  commonWords: [' ', '', 'A', 'DE', 'DEL', 'DESDE', 'COMO', 'CÓMO', ',', 'EN', 'LA', 'UN', 'LOS', 'LAS', 'ESTE', 'EL', 'Y', 'QUE', 'LO', 'SE', 'PARA', 'THE', 'CON',
+    'CONTRA', 'POR', '-', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '22', '45', '70', '99',
+    '100', '130', '30', '31', '27', '28', '34', '35', '40', '47', '53', '54', '60', '83', 'AND', 'A', 'E', 'I', 'O', 'U', '$'],
+
 
   userRoles: ['editor', 'admin'],
 

@@ -10,6 +10,7 @@ router.post('/create', controller.create )
 router.get('/:id', isAuth() , controller.show )
 router.put('/:id', isAuth() , controller.update )
 router.delete('/:id', isAuth() , controller.destroy )
+router.get('/volumes/:id', controller.getVolumesByUserId )
 router.get('/segura', isAuth() ,  (req, res) => res.send('Example segura!'))
 
 module.exports = router;

@@ -2,8 +2,9 @@ const express = require('express');
 const passport = require('passport');
 const { signToken } = require('../auth.service');
 const router = express.Router();
+const { URL_FRONT } = require('../../config')
 
-router.get('/', 
+router.get('/',
   passport.authenticate('google', {
     session: false,
     scope: ["profile", "email"],
@@ -12,17 +13,40 @@ router.get('/',
   })
 );
 
+// when login is successful, retrieve user info
+router.get("/success", (req, res) => {
+  if (req.user) {
+    const user = req.user
+    const token = signToken(req.user.id, req.user._json.email);
+    res.json({ token, user });
+  }
+  res.status(401).json({
+    success: false,
+    message: "user failed to authenticate."
+  });
+});
+
+router.get('/failed', (req, res) => {
+  res.status(401).json({
+    success: false,
+    message: "user failed to authenticate."
+  });
+})
+
+// When logout, redirect to client
+router.get('/logout', (req, res) => {
+  req.session = null;
+  req.logout()
+  res.redirect(URL_FRONT)
+})
 
 // callback url upon successful google authentication
 router.get(
   '/callback',
-  passport.authenticate('google', { session: false }),
-  (req, res) => { 
-    const token = signToken(req.user.id, req.user._json.email);
-    res.json({ token });
+  passport.authenticate('google', { failureRedirect: '/auth/google/failed' }),
+  (req, res) => {
+    res.redirect(URL_FRONT)
   }
 );
-
-
 
 module.exports = router;

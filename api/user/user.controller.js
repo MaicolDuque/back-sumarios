@@ -61,6 +61,18 @@ const verifyTrue = async (req, res) => {
 
 
 /**
+ * Return all volumes by id User
+ */
+function getVolumesByUserId(req, res) {
+  const { id } = req.params
+  return User.findOne({ _id: id }, { mg_list_volumes: 1, _id: 0 })
+        .populate({ select: { url: 1, description: 1 }, path: 'mg_list_volumes', model: 'Volume' }).exec()
+    .then(users => res.status(200).json(users))
+    .catch(handleError(res));
+}
+
+
+/**
  * Creates a new user
  */
 const create = async (req, res) => {
@@ -116,5 +128,6 @@ module.exports = {
   destroy,
   show,
   update,
+  getVolumesByUserId,
   verifyTrue
 };

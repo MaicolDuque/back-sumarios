@@ -15,7 +15,9 @@ const UserSchema = new Schema({
   mg_status: Boolean,
   mg_role: { type: String, default: 'editor' },
   mg_password: { type: String },
-  mg_urlMagazine: { type: String, required: true }
+  mg_urlMagazine: { type: String, required: true },
+  mg_contact_lists: [{ type: Schema.Types.ObjectId, ref: "ContactList" }],
+  mg_list_volumes: [{ type: Schema.Types.ObjectId, ref: "Volume" }],
   // mg_contact_lists: [{ type: Schema.Types.ObjectId, ref: "ContactList", default: null }]
 }, { timestamps: true });
 
