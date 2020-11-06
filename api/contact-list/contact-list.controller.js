@@ -17,7 +17,7 @@ function handleError(res, statusCode) {
  * Return all ContactList
  */
 function index(req, res) {
-  return ContactList.find({}).exec()
+  return ContactList.find({}).populate({ path: 'mg_contacts', model: 'Contact' }).exec()
     .then(lists => res.status(200).json(lists))
     .catch(handleError(res));
 }
