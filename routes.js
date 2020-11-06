@@ -3,6 +3,7 @@ const user = require('./api/user');
 const article = require('./api/article');
 const auth = require('./auth');
 const contactList = require('./api/contact-list');
+const summary = require('./api/summary');
 const contact = require('./api/contact');
 
 module.exports = (app) => {
@@ -12,4 +13,5 @@ module.exports = (app) => {
   app.use('/api/contact-list', contactList);
   app.use('/api/contact', contact);
   app.use('/api/articles', article);
+  app.use('/api/summaries', summary);
 }

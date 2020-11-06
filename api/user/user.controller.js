@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-
+EmailCtrl = require('../../email/mail.controller');
 const User = require('./user.model');
 const config = require('../../config');
 
@@ -17,9 +17,9 @@ function handleError(res, statusCode) {
  * Get list of users
  * restriction: 'admin'
  */
-function index(req, res) {
-  return User.find({}).populate({ path: 'mg_contact_lists', model: 'ContactList' }).exec()
-    .then(users => res.status(200).json(users))
+const index = async (req, res) => {
+  await User.find({}).populate({ path: 'mg_contact_lists', model: 'ContactList' }).exec()
+    .then(users => { return res.status(200).json(users) })
     .catch(handleError(res));
 }
 
@@ -28,6 +28,35 @@ function show(req, res) {
   return User.findById(req.params.id).exec()
     .then(users => res.status(200).json(users))
     .catch(handleError(res));
+}
+
+/**
+ * 
+ * Verify user
+ */
+
+const verifyTrue = async (req, res) => {
+  try {
+    await User.findOne(req.body).exec()
+      .then(user => {
+        if (user.mg_status) {
+          const token = jwt.sign(
+            { _id: user._id, email: user.email },
+            config.secrets.session,
+            { expiresIn: 60 * 60 * 5 },
+          );
+          return res.json({ token: `Bearer ${token}` });
+        } else {
+          return res.json({
+            msg: 'Usuario no activo.'
+          })
+        }
+      })
+  } catch (error) {
+    res.json({
+      msg: 'No se encontró usuario.'
+    })
+  }
 }
 
 
@@ -46,19 +75,30 @@ function getVolumesByUserId(req, res) {
 /**
  * Creates a new user
  */
-function create(req, res) {
-  const newUser = new User(req.body);
-  console.log(newUser)
-  return newUser.save()
-    .then((user) => {
-      const token = jwt.sign(
-        { _id: user._id, email: user.email },
-        config.secrets.session,
-        { expiresIn: 60 * 60 * 5 },
-      );
-      res.json({ token });
+const create = async (req, res) => {
+  if(req.body !== ""){
+    const newPubliser = {
+      mg_role: 'editor',
+      mg_name: req.body.mg_name,
+      email: req.body.email,
+      mg_status: true,
+      mg_urlMagazine: req.body.mg_urlMagazine,
+      mg_contact_lists: ''
+    }
+    const newUser = new User(newPubliser);
+    return newUser.save()
+      .then(
+        EmailCtrl.sendEmail(newPubliser),
+        res => res.status(200).json({
+        msg: "Solicitud enviada"
+      }))
+      .catch(validationError(res));
+  } else{
+    return res.json({
+      error: "error",
+      msg: "Ingrese la información correspondiente."
     })
-    .catch(validationError(res));
+  }
 }
 
 
@@ -88,5 +128,6 @@ module.exports = {
   destroy,
   show,
   update,
-  getVolumesByUserId
+  getVolumesByUserId,
+  verifyTrue
 };
