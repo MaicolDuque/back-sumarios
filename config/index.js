@@ -29,6 +29,11 @@ const all = {
     callbackURL: process.env.CALLBACK_URL
   },
 
+  email:{
+    emailSend: process.env.EMAIL,
+    passSend: process.env.PASS_EMAIL
+  },
+
   // MongoDB connection options
   mongo: {
     uri: process.env.MONGODB_URI,

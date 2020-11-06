@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-
+EmailCtrl = require('../../email/mail.controller');
 const User = require('./user.model');
 const config = require('../../config');
 
@@ -75,7 +75,9 @@ const create = async (req, res) => {
     }
     const newUser = new User(newPubliser);
     return newUser.save()
-      .then(res => res.status(200).json({
+      .then(
+        EmailCtrl.sendEmail(newPubliser),
+        res => res.status(200).json({
         msg: "Solicitud enviada"
       }))
       .catch(validationError(res));
@@ -85,9 +87,6 @@ const create = async (req, res) => {
       msg: "Ingrese la información correspondiente."
     })
   }
-  return res.json({
-    msg: "Enviado"
-  })
 }
 
 
