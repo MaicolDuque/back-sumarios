@@ -1,5 +1,6 @@
 
 const ContactList = require("./contact-list.model");
+const User = require("../user/user.model");
 
 function validationError(res, statusCode) {
   const statusCodeLocal = statusCode || 422;
@@ -22,15 +23,26 @@ function index(req, res) {
 }
 
 /**
+ * Return all ContactList by User ID - Editor
+ */
+function showContactListsByUser(req, res) {
+  const { _id } = req.params
+  return User.findOne({ _id }, { mg_contact_lists: 1 })
+    .populate({ select: { name: 1, description: 1 }, path: 'mg_contact_lists', model: 'ContactList' }).exec()
+    .then(lists => res.status(200).json(lists))
+    .catch(handleError(res));
+}
+
+/**
  * Creates a new ContactList
  */
 function create(req, res) {
   const newList = new ContactList(req.body);
   return newList.save()
-  .then((user) => {    
-    res.json( user );
-  })
-  .catch(validationError(res));
+    .then((user) => {
+      res.json(user);
+    })
+    .catch(validationError(res));
 }
 
 
@@ -48,5 +60,6 @@ function destroy(req, res) {
 module.exports = {
   index,
   create,
-  destroy
+  destroy,
+  showContactListsByUser
 }

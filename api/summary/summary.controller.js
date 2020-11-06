@@ -24,9 +24,9 @@ function index(req, res) {
 /**
  * Return all Summary by User ID - Editor
  */
-function showSummariesById(req, res) {
-  const { _id } = req.params
-  return Summary.findById(_id).exec()
+function showSummariesByUserId(req, res) {
+  const { user_id } = req.params
+  return Summary.find({ user_id }).exec()
     .then(data => res.status(200).json(data))
     .catch(handleError(res));
 }
@@ -44,5 +44,5 @@ function create(req, res) {
 module.exports = {
   index,
   create,
-  showSummariesById
+  showSummariesByUserId
 }

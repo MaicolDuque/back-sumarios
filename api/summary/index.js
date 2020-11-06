@@ -6,7 +6,7 @@ const controller = require('./summary.controller');
 
 router.get('/test', (req, res) => res.send('Test Summaries list!'))
 router.get('/', controller.index)
-router.get('/:_id', controller.showSummariesById)
+router.get('/:user_id', controller.showSummariesByUserId)
 router.post('/', controller.create)
 
 module.exports = router
