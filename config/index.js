@@ -37,7 +37,7 @@ const all = {
     callbackURL: process.env.CALLBACK_URL
   },
 
-  email:{
+  emailTransfer:{
     emailSend: process.env.EMAIL,
     passSend: process.env.PASS_EMAIL
   },

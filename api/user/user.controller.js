@@ -1,5 +1,4 @@
 const jwt = require('jsonwebtoken');
-EmailCtrl = require('../../email/mail.controller');
 const User = require('./user.model');
 const config = require('../../config');
 
@@ -28,6 +27,10 @@ function show(req, res) {
   return User.findById(req.params.id).exec()
     .then(users => res.status(200).json(users))
     .catch(handleError(res));
+}
+
+function getAdminEmail(req, res){
+  return User.findOne()
 }
 
 /**
@@ -88,7 +91,6 @@ function create (req, res) {
     const newUser = new User(newPubliser);
     return newUser.save()
       .then(
-        EmailCtrl.sendEmail(newPubliser),
         res => res.status(200).json({
         msg: "Solicitud enviada"
       }))
