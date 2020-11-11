@@ -39,7 +39,8 @@ function create(req, res) {
  */
 async function searchArticles(req, res) {
   try {
-    const { keyword } = req.body
+    let { keyword } = req.body
+    keyword = keyword.toUpperCase()
     const articles = await Article.find({}).exec()
     console.log(articles.length)
     const ariclesWithKeyword = articles.filter( article => article.list_keywords[0] && article.list_keywords[0][keyword] ) //Select only the articles that have the keyword

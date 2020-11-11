@@ -37,7 +37,9 @@ function show(req, res) {
 
 const verifyTrue = async (req, res) => {
   try {
-    await User.findOne(req.body).exec()
+    const { email } = req.body
+    console.log(email)
+    await User.findOne({email}).exec()
       .then(user => {
         if (user.mg_status) {
           const token = jwt.sign(
