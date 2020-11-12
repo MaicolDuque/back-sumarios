@@ -32,6 +32,17 @@ function showSummariesByUserId(req, res) {
 }
 
 /**
+ * Return all Summary by ID
+ */
+function showSummaryId(req, res) {
+  const { _id } = req.params
+  return Summary.findById(_id)
+    .populate({ select: { list_keywords: 0 }, path: 'list_articles', model: 'Article' }).exec()
+    .then(data => res.status(200).json(data))
+    .catch(handleError(res));
+}
+
+/**
  * Creates a new Summary
  */
 function create(req, res) {
@@ -44,5 +55,6 @@ function create(req, res) {
 module.exports = {
   index,
   create,
-  showSummariesByUserId
+  showSummariesByUserId,
+  showSummaryId
 }
