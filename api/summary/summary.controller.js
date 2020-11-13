@@ -52,9 +52,21 @@ function create(req, res) {
     .catch(validationError(res));
 }
 
+/**
+ * Update articles of the respective Summary
+ */
+function updatesArticlesByIdSummary(req, res) {
+  const { _id } = req.params
+  const { list_articles } = req.body;
+  return Summary.updateOne({ _id }, { $pull: { list_articles: { $nin: list_articles } } }).exec()
+    .then(data => res.status(201).json(data))
+    .catch(validationError(res));
+}
+
 module.exports = {
   index,
   create,
   showSummariesByUserId,
-  showSummaryId
+  showSummaryId,
+  updatesArticlesByIdSummary
 }
