@@ -1,5 +1,4 @@
 const jwt = require('jsonwebtoken');
-EmailCtrl = require('../../email/mail.controller');
 const User = require('./user.model');
 const config = require('../../config');
 
@@ -17,9 +16,9 @@ function handleError(res, statusCode) {
  * Get list of users
  * restriction: 'admin'
  */
-const index = async (req, res) => {
-  await User.find({}).populate({ path: 'mg_contact_lists', model: 'ContactList' }).exec()
-    .then(users => { return res.status(200).json(users) })
+function index (req, res) {
+  return User.find({}).populate({ path: 'mg_contact_lists', model: 'ContactList' }).exec()
+    .then(users => res.status(200).json(users))
     .catch(handleError(res));
 }
 
@@ -30,26 +29,29 @@ function show(req, res) {
     .catch(handleError(res));
 }
 
+function getAdminEmail(req, res){
+  return User.findOne()
+}
+
 /**
  * 
  * Verify user
  */
 
-const verifyTrue = async (req, res) => {
+function verifyTrue (req, res) {
   try {
     const { email } = req.body
-    console.log(email)
     await User.findOne({email}).exec()
       .then(user => {
         if (user.mg_status) {
           const token = jwt.sign(
-            { _id: user._id, email: user.email },
+            { _id: user._id, email: user.email, mg_role: user.mg_role, mg_contact_lists: user.mg_contact_lists},
             config.secrets.session,
             { expiresIn: 60 * 60 * 5 },
           );
-          return res.json({ token: `Bearer ${token}` });
+          res.json({ token: `Bearer ${token}` });
         } else {
-          return res.json({
+          res.json({
             msg: 'Usuario no activo.'
           })
         }
@@ -77,7 +79,7 @@ function getVolumesByUserId(req, res) {
 /**
  * Creates a new user
  */
-const create = async (req, res) => {
+function create (req, res) {
   if(req.body !== ""){
     const newPubliser = {
       mg_role: 'editor',
@@ -90,7 +92,6 @@ const create = async (req, res) => {
     const newUser = new User(newPubliser);
     return newUser.save()
       .then(
-        EmailCtrl.sendEmail(newPubliser),
         res => res.status(200).json({
         msg: "Solicitud enviada"
       }))
