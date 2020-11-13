@@ -44,7 +44,7 @@ function verifyTrue (req, res) {
       .then(user => {
         if (user.mg_status) {
           const token = jwt.sign(
-            { _id: user._id, email: user.email },
+            { _id: user._id, email: user.email, mg_role: user.mg_role, mg_contact_lists: user.mg_contact_lists},
             config.secrets.session,
             { expiresIn: 60 * 60 * 5 },
           );
