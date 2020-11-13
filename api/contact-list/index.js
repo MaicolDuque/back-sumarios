@@ -9,5 +9,6 @@ router.get('/', controller.index)
 router.post('/', controller.create)
 router.delete('/:id', controller.destroy)
 router.post('/search', controller.contactList)
+router.get('/:_id', controller.showContactListsByUser)
 
 module.exports = router

@@ -65,6 +65,18 @@ function distictObject(arrayObject){
   }
   return distinctObjects
 }
+
+/**
+ * Return all ContactList by User ID - Editor
+ */
+function showContactListsByUser(req, res) {
+  const { _id } = req.params
+  return User.findOne({ _id }, { mg_contact_lists: 1 })
+    .populate({ select: { name: 1, description: 1 }, path: 'mg_contact_lists', model: 'ContactList' }).exec()
+    .then(lists => res.status(200).json(lists))
+    .catch(handleError(res));
+}
+
 /**
  * Creates a new ContactList
  */
@@ -95,5 +107,6 @@ module.exports = {
   index,
   create,
   destroy,
-  contactList
+  contactList,
+  showContactListsByUser
 }

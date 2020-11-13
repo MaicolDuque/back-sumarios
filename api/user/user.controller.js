@@ -40,7 +40,8 @@ function getAdminEmail(req, res){
 
 function verifyTrue (req, res) {
   try {
-    return User.findOne(req.body).exec()
+    const { email } = req.body
+    await User.findOne({email}).exec()
       .then(user => {
         if (user.mg_status) {
           const token = jwt.sign(
