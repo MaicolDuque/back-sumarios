@@ -54,8 +54,9 @@ async function sendEmailSummary(req, res) {
 		};
 		return emailSend(mailOptions)
 		.then(info => res.send(info))
-		.catch(error => res.status(500).send(error))
+		.catch(error => { res.status(500).send(error); console.log(error) })
 	} catch (error) {
+		console.log(error)
 		return res.status(500).send(error)
 	}
 }
