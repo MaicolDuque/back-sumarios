@@ -63,10 +63,22 @@ function updatesArticlesByIdSummary(req, res) {
     .catch(validationError(res));
 }
 
+/**
+ * Update info summary (name, description) by id summary
+ */
+function updatesInfoSummaryById(req, res) {
+  const { _id } = req.params
+  const { name, description = "", favorite = false } = req.body;
+  return Summary.findByIdAndUpdate(_id, { name, description, favorite }, { new: true } ).exec()
+    .then(data => res.status(201).json(data))
+    .catch(validationError(res));
+}
+
 module.exports = {
   index,
   create,
   showSummariesByUserId,
   showSummaryId,
-  updatesArticlesByIdSummary
+  updatesArticlesByIdSummary,
+  updatesInfoSummaryById
 }
