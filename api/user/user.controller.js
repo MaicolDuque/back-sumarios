@@ -16,7 +16,7 @@ function handleError(res, statusCode) {
  * Get list of users
  * restriction: 'admin'
  */
-function index (req, res) {
+function index(req, res) {
   return User.find({}).populate({ path: 'mg_contact_lists', model: 'ContactList' }).exec()
     .then(users => res.status(200).json(users))
     .catch(handleError(res));
@@ -28,6 +28,7 @@ function show(req, res) {
     .then(users => res.status(200).json(users))
     .catch(handleError(res));
 }
+
 
 /**
  * 
@@ -69,7 +70,7 @@ async function verifyTrue (req, res) {
 function getVolumesByUserId(req, res) {
   const { id } = req.params
   return User.findOne({ _id: id }, { mg_list_volumes: 1, _id: 0 })
-        .populate({ select: { url: 1, description: 1 }, path: 'mg_list_volumes', model: 'Volume' }).exec()
+    .populate({ select: { url: 1, description: 1 }, path: 'mg_list_volumes', model: 'Volume' }).exec()
     .then(users => res.status(200).json(users))
     .catch(handleError(res));
 }
@@ -78,8 +79,8 @@ function getVolumesByUserId(req, res) {
 /**
  * Creates a new user
  */
-function create (req, res) {
-  if(req.body !== ""){
+function create(req, res) {
+  if (req.body !== "") {
     const newPubliser = {
       mg_role: 'editor',
       mg_name: req.body.mg_name,
@@ -92,10 +93,10 @@ function create (req, res) {
     return newUser.save()
       .then(
         res => res.status(200).json({
-        msg: "Solicitud enviada"
-      }))
+          msg: "Solicitud enviada"
+        }))
       .catch(validationError(res));
-  } else{
+  } else {
     return res.json({
       error: "error",
       msg: "Ingrese la información correspondiente."
