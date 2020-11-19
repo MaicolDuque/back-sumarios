@@ -12,59 +12,15 @@ function handleError(res, statusCode) {
   return err => res.status(statusCodeLocal).send(err);
 }
 
-
 /**
  * Return all ContactList
  */
 function index(req, res) {
-  return ContactList.find({}).populate({ path: 'mg_contacts', model: 'Contact' }).exec()
+  return ContactList.find({}).exec()
     .then(lists => res.status(200).json(lists))
     .catch(handleError(res));
 }
 
-/**
- * Return specific ContactList
- */
-async function contactList(req, res) {
-  try {
-    const mg_contact_lists = req.body
-    const allContactList = await ContactList.find({}).populate({ path: 'mg_contacts', model: 'Contact', select: 'c_name c_email' }).exec()
-    const contactsListReturn = [];
-    const dataContacts = [];
-    mg_contact_lists.map(element => {
-      allContactList.filter(contactListId => {
-        contactListId._id == element ? (contactsListReturn.push({
-          id: contactListId._id,
-          name: contactListId.name,
-          description: contactListId.description,
-          mg_contacts: contactListId.mg_contacts
-        })) : (null)
-      })
-    });
-
-    res.send(contactsListReturn)
-  } catch (error) {
-    return handleError(res)
-  }
-}
-/**
- * Function that removes repeated objects
- */
-function distictObject(arrayObject){
-  const distinctObjects = [];
-  const mapObjects = new Map();
-  for (const data of arrayObject) {
-    if (!mapObjects.has(data.id)) {
-      mapObjects.set(data.id, true);    // set any value to Map
-      distinctObjects.push({
-        id: data.id,
-        name: data.name,
-        email: data.email
-      });
-    }
-  }
-  return distinctObjects
-}
 
 /**
  * Return all ContactList by User ID - Editor
@@ -72,7 +28,7 @@ function distictObject(arrayObject){
 function showContactListsByUser(req, res) {
   const { _id } = req.params
   return User.findOne({ _id }, { mg_contact_lists: 1 })
-    .populate({ select: { name: 1, description: 1 }, path: 'mg_contact_lists', model: 'ContactList' }).exec()
+    .populate({ select: { name: 1, description: 1, createdAt: 1 }, path: 'mg_contact_lists', model: 'ContactList' }).exec()
     .then(lists => res.status(200).json(lists))
     .catch(handleError(res));
 }
@@ -87,7 +43,11 @@ function create(req, res) {
     .then((user) => {
       return User.updateOne({ _id: id_user }, { $push: { mg_contact_lists: user } })
     })
-    .then(result => res.send(result))
+    .then(result => res.status(200).json({
+      error: false,
+      msg: 'La lista de contactos se creó exitosamente.',
+      result: result
+    }))
     .catch(validationError(res));
 }
 
@@ -96,10 +56,36 @@ function create(req, res) {
  * Delete ContactList
  */
 function destroy(req, res) {
-  // return res.json({err:"sdsdsdsd"});
-  return ContactList.findByIdAndDelete(req.params.id).exec()
-    .then(res => res.status(200).json())
-    .catch(err => res.status(500).send(err))
+  const { id } = req.params
+  console.log(id)
+  return User.updateMany({ mg_contact_lists: { _id: id } }, { $pull: { mg_contact_lists: id } }).exec()
+    .then(() => { return ContactList.findByIdAndDelete(id).exec() })
+    .then(result => res.status(200).json({
+      error: false,
+      msg: 'La lista de contactos se eliminó exitosamente.',
+      result: result
+    }))
+    .catch(validationError(res));
+}
+
+/**
+ * Update ContactList
+ */
+
+function update(req, res) {
+  const id = req.params.id;
+  console.log(req.body)
+  return ContactList.findByIdAndUpdate(id, req.body, { new: true }).exec()
+    .then(user => res.status(200).json({
+      error:false,
+      msg: "Lista de Contactos actualizada.",
+      data: user
+    }))
+    .catch(err => res.status(500).json({
+      error: true,
+      msg: "La lista no fue actualizado.",
+      data: err
+    }))
 }
 
 
@@ -107,6 +93,6 @@ module.exports = {
   index,
   create,
   destroy,
-  contactList,
-  showContactListsByUser
+  showContactListsByUser,
+  update
 }
