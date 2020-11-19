@@ -29,36 +29,35 @@ function show(req, res) {
     .catch(handleError(res));
 }
 
-function getAdminEmail(req, res){
-  return User.findOne()
-}
-
 /**
  * 
  * Verify user
  */
 
-function verifyTrue (req, res) {
+async function verifyTrue (req, res) {
   try {
     const { email } = req.body
-    await User.findOne({email}).exec()
+    await User.findOne({email})
+    .populate({select: { _id:1}, path: 'mg_contact_lists', model: 'ContactList', match:{name:"Default"} }).exec()
       .then(user => {
         if (user.mg_status) {
           const token = jwt.sign(
-            { _id: user._id, email: user.email, mg_role: user.mg_role, mg_contact_lists: user.mg_contact_lists},
+            { _id: user._id, email: user.email, mg_role: user.mg_role, mg_contact_lists: user.mg_contact_lists[0]._id},
             config.secrets.session,
             { expiresIn: 60 * 60 * 5 },
           );
           res.json({ token: `Bearer ${token}` });
         } else {
           res.json({
+            caution: true,
             msg: 'Usuario no activo.'
           })
         }
       })
   } catch (error) {
     res.json({
-      msg: 'No se encontró usuario.'
+      error: true,
+      msg: 'Usuario no encontrado, verifique sus credenciales y vuelva a intentarlo.'
     })
   }
 }
@@ -85,9 +84,9 @@ function create (req, res) {
       mg_role: 'editor',
       mg_name: req.body.mg_name,
       email: req.body.email,
-      mg_status: true,
+      mg_status: false,
       mg_urlMagazine: req.body.mg_urlMagazine,
-      mg_contact_lists: ''
+      mg_contact_lists: []
     }
     const newUser = new User(newPubliser);
     return newUser.save()
