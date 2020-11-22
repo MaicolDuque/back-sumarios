@@ -87,7 +87,7 @@ async function addVolumesMagazine(req, res) {
         .then(async (vol) => {
           let idsArticles = await addArticlesByVolume(volume.url)
           Volume.updateOne({ _id: vol._id }, { $push: { list_articles: { $each: idsArticles } } }).exec()  // Add articles to volume
-          return User.updateOne({ _id }, { $push: { mg_list_volumes: vol._id } }, { new: true }).exec()
+          return User.updateOne({ _id: idEditor }, { $push: { mg_list_volumes: vol._id } }, { new: true }).exec()
         })
         .then(res => res)
         .catch(handleError(res));
@@ -125,7 +125,7 @@ async function makeIndexacion(req, res) {
       const $ = cheerio.load(html);
       const content = $("#body").text().replace(/([\,.;()$])|\r?\t?/gi, '').trim().toUpperCase().replace(/\n/gi, ' ')
       const arrayWords = content.split(' ');
-      const arrayWordsFilter = arrayWords.filter(word => !commonWords.includes(word)) // Eliminar palabras a no filtrar
+      const arrayWordsFilter = arrayWords.filter(word => !commonWords.includes(word.toLowerCase())) // Eliminar palabras a no filtrar
       const objectWords = calculateNumberTimesRepeat(arrayWordsFilter);
       Article.updateOne({ _id: article._id }, { list_keywords: objectWords }).exec().catch(console.log) // Add keywords to respective article
       return { ...objectWords }

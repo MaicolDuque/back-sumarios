@@ -53,6 +53,7 @@ async function sendEmailSummary(req, res) {
 			subject: name,
 			html: htmlSummaries(articles.list_articles, name_magazine)
 		};
+		console.log( req.body)
 		await createSendingHistory(summaryId, userId, listaId)
 		return emailSend(mailOptions)
 			.then(info => res.send(info))
@@ -66,6 +67,8 @@ async function sendEmailSummary(req, res) {
 function createSendingHistory(summary, user, contact_list) {
 	const send = new SendingHistory({ summary, user, contact_list })
 	return send.save()
+			.then( res => res)
+			.catch( err => err )
 }
 
 function retrieveEmailSentsByUser(req, res) {

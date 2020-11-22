@@ -52,20 +52,30 @@ function create(req, res) {
 async function searchArticles(req, res) {
   try {
     let { keyword } = req.body
-    keyword = keyword.toUpperCase()
+    keyword = keyword.trim().toUpperCase()
+    const allKeywords = keyword.split(",")
+    const keyword1 = allKeywords[0].trim()
+    const keyword2 = allKeywords[1]?.trim()
+    const keyword3 = allKeywords[2]?.trim()
     const articles = await Article.find({}).exec()
     console.log(articles.length)
-    const ariclesWithKeyword = articles.filter( article => article.list_keywords[0] && article.list_keywords[0][keyword] ) //Select only the articles that have the keyword
+    const ariclesWithKeyword = articles.filter( article => { //Select only the articles that have the keyword
+      return article?.list_keywords[0][keyword1] || article?.list_keywords[0][keyword2] || article?.list_keywords[0][keyword3]
+    })
     const infoArticlesOnlyKeyword = ariclesWithKeyword.map( article => {
       return {
         _id: article._id,
         urlHtml: article.urlHtml,
         title: article.title,
         authors: article.authors,
-        list_keywords: { [keyword]: article.list_keywords[0][keyword] }
+        list_keywords: { 
+          [keyword1]: article.list_keywords[0][keyword1],
+          [keyword2]: article.list_keywords[0][keyword2],
+          [keyword3]: article.list_keywords[0][keyword3]
+        }
       }
     })
-    const articlesSorted = infoArticlesOnlyKeyword.sort( ( a, b) => b.list_keywords[keyword] - a.list_keywords[keyword])  // Articles sorted DESC
+    const articlesSorted = infoArticlesOnlyKeyword.sort( ( a, b) => b.list_keywords[keyword1] - a.list_keywords[keyword1])  // Articles sorted DESC
     console.log(ariclesWithKeyword.length)
     res.send(articlesSorted)
   } catch (error) {
