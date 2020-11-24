@@ -39,7 +39,7 @@ async function verifyTrue (req, res) {
   try {
     const { email } = req.body
     await User.findOne({email})
-    .populate({select: { _id:1}, path: 'mg_contact_lists', model: 'ContactList', match:{name:"Default"} }).exec()
+    .populate({select: { _id:1}, path: 'mg_contact_lists', model: 'ContactList', match:{name:"Todos"} }).exec()
       .then(user => {
         if (user.mg_status) {
           const token = jwt.sign(

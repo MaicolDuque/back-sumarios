@@ -48,7 +48,7 @@ async function sendEmailSummary(req, res) {
 		const articles = await Summary.findOne({ _id: summaryId }, { list_articles: 1 }).populate({ path: 'list_articles', model: 'Article' }).exec()
 		const emailContacts = contacts.mg_contacts.map(contact => contact.c_email).toString()
 		const mailOptions = {
-			from: 'notificacionespcjic@gmail.com',
+			from: 'rpolitecnica@elpoli.edu.co',
 			to: emailContacts,
 			subject: name,
 			html: htmlSummaries(articles.list_articles, name_magazine, description)
