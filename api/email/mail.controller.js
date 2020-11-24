@@ -43,7 +43,7 @@ function sendEmail(req, res) {
 
 async function sendEmailSummary(req, res) {
 	try {
-		const { listaId, summaryId, name, name_magazine, userId } = req.body
+		const { listaId, summaryId, name, description, name_magazine, userId } = req.body
 		const contacts = await ContactList.findOne({ _id: listaId }, { mg_contacts: 1 }).populate({ path: 'mg_contacts', model: 'Contact' }).exec()
 		const articles = await Summary.findOne({ _id: summaryId }, { list_articles: 1 }).populate({ path: 'list_articles', model: 'Article' }).exec()
 		const emailContacts = contacts.mg_contacts.map(contact => contact.c_email).toString()
@@ -51,24 +51,23 @@ async function sendEmailSummary(req, res) {
 			from: 'notificacionespcjic@gmail.com',
 			to: emailContacts,
 			subject: name,
-			html: htmlSummaries(articles.list_articles, name_magazine)
+			html: htmlSummaries(articles.list_articles, name_magazine, description)
 		};
-		console.log( req.body)
 		await createSendingHistory(summaryId, userId, listaId)
 		return emailSend(mailOptions)
 			.then(info => res.send(info))
 			.catch(error => { res.status(500).send(error); console.log(error) })
 	} catch (error) {
 		console.log(error)
-		return res.status(500).send(error)
+		return res.status(500).json({ error: error.message })
 	}
 }
 
 function createSendingHistory(summary, user, contact_list) {
 	const send = new SendingHistory({ summary, user, contact_list })
 	return send.save()
-			.then( res => res)
-			.catch( err => err )
+		.then(res => res)
+		.catch(err => err)
 }
 
 function retrieveEmailSentsByUser(req, res) {

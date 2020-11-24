@@ -1,6 +1,6 @@
 
 
-module.exports = (articles, name_magazine) => {
+module.exports = (articles, name_magazine, description) => {
   let htmlArticles = '';
   articles.forEach(article => {
     htmlArticles += `
@@ -17,6 +17,15 @@ module.exports = (articles, name_magazine) => {
       </div>
     `
   })
+
+  const summaryDescription = description ? `
+    <div class="content-summary">
+      <h3 style="color: #196844; text-align: center;">Descripción del sumario</h3>
+      <p style="font-size: 0.95em;color: #7c7979">${description}</p>
+      <hr style=" background: #dfdfdf;height: 2px;border: none;" />
+    </div>
+  `: ''
+
   return `
   <div style="max-width: 700px;
               min-height: 500px;
@@ -37,6 +46,7 @@ module.exports = (articles, name_magazine) => {
       <div style="margin-top: 3.3%;width: 48%;font-size:1.3em;text-align:right; margin-right:10px; display: inline-block;float: right;">Sumario - ${name_magazine}</div>
     </div>
     <div style="font-family: sans-serif;padding: 10px 30px;">
+      ${summaryDescription}
       ${htmlArticles}
     </div>
   </div>
