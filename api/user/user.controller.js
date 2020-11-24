@@ -1,5 +1,4 @@
 const jwt = require('jsonwebtoken');
-
 const User = require('./user.model');
 const config = require('../../config');
 
@@ -32,12 +31,46 @@ function show(req, res) {
 
 
 /**
+ * 
+ * Verify user
+ */
+
+async function verifyTrue (req, res) {
+  try {
+    const { email } = req.body
+    await User.findOne({email})
+    .populate({select: { _id:1}, path: 'mg_contact_lists', model: 'ContactList', match:{name:"Default"} }).exec()
+      .then(user => {
+        if (user.mg_status) {
+          const token = jwt.sign(
+            { _id: user._id, email: user.email, mg_role: user.mg_role, mg_contact_lists: user.mg_contact_lists[0]._id, name_magazine: user.mg_name},
+            config.secrets.session,
+            { expiresIn: 60 * 60 * 5 },
+          );
+          res.json({ token: `Bearer ${token}` });
+        } else {
+          res.json({
+            caution: true,
+            msg: 'Usuario no activo.'
+          })
+        }
+      })
+  } catch (error) {
+    res.json({
+      error: true,
+      msg: 'Usuario no encontrado, verifique sus credenciales y vuelva a intentarlo.'
+    })
+  }
+}
+
+
+/**
  * Return all volumes by id User
  */
 function getVolumesByUserId(req, res) {
   const { id } = req.params
   return User.findOne({ _id: id }, { mg_list_volumes: 1, _id: 0 })
-        .populate({ select: { url: 1, description: 1 }, path: 'mg_list_volumes', model: 'Volume' }).exec()
+    .populate({ select: { url: 1, description: 1 }, path: 'mg_list_volumes', model: 'Volume' }).exec()
     .then(users => res.status(200).json(users))
     .catch(handleError(res));
 }
@@ -47,18 +80,28 @@ function getVolumesByUserId(req, res) {
  * Creates a new user
  */
 function create(req, res) {
-  const newUser = new User(req.body);
-  console.log(newUser)
-  return newUser.save()
-    .then((user) => {
-      const token = jwt.sign(
-        { _id: user._id, email: user.email },
-        config.secrets.session,
-        { expiresIn: 60 * 60 * 5 },
-      );
-      res.json({ token });
+  if (req.body !== "") {
+    const newPubliser = {
+      mg_role: 'editor',
+      mg_name: req.body.mg_name,
+      email: req.body.email,
+      mg_status: false,
+      mg_urlMagazine: req.body.mg_urlMagazine,
+      mg_contact_lists: []
+    }
+    const newUser = new User(newPubliser);
+    return newUser.save()
+      .then(
+        res => res.status(200).json({
+          msg: "Solicitud enviada"
+        }))
+      .catch(validationError(res));
+  } else {
+    return res.json({
+      error: "error",
+      msg: "Ingrese la información correspondiente."
     })
-    .catch(validationError(res));
+  }
 }
 
 
@@ -88,5 +131,6 @@ module.exports = {
   destroy,
   show,
   update,
-  getVolumesByUserId
+  getVolumesByUserId,
+  verifyTrue
 };

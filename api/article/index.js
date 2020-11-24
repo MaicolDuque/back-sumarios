@@ -6,6 +6,7 @@ const controller = require('./article.controller');
 
 router.get('/test', (req, res) => res.send('Test Contact list!'))
 router.get('/', controller.index)
+router.get('/volume/:_id', controller.articlesByIdVolume)
 router.post('/', controller.create)
 router.post('/search', controller.searchArticles)
 

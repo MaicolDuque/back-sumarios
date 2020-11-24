@@ -3,6 +3,8 @@
   * @author: Maicol Felipe Duque Urrea <maicolduque01@gmail.com>
  */
 
+const stopWords = require('./stop-words')
+
 const all = {
   env: process.env.NODE_ENV,
 
@@ -23,10 +25,11 @@ const all = {
     session: process.env.SECRETS_SESSION,
   },
 
-  commonWords: [' ', '', 'A', 'DE', 'DEL', 'DESDE', 'COMO', 'CÓMO', ',', 'EN', 'LA', 'UN', 'LOS', 'LAS', 'ESTE', 'EL', 'Y', 'QUE', 'LO', 'SE', 'PARA', 'THE', 'CON',
-    'CONTRA', 'POR', '-', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '22', '45', '70', '99',
-    '100', '130', '30', '31', '27', '28', '34', '35', '40', '47', '53', '54', '60', '83', 'AND', 'A', 'E', 'I', 'O', 'U', '$'],
+  //URL frontend app
+  url_front: process.env.URL_FRONT,
 
+  //List of stop words of the articles
+  commonWords: stopWords,
 
   userRoles: ['editor', 'admin'],
 
@@ -35,6 +38,11 @@ const all = {
     clientID: process.env.CLIENT_ID,
     clientSecret: process.env.CLIENT_SECRET,
     callbackURL: process.env.CALLBACK_URL
+  },
+
+  emailTransfer:{
+    emailSend: process.env.EMAIL,
+    passSend: process.env.PASS_EMAIL
   },
 
   // MongoDB connection options

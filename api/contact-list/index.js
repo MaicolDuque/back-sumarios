@@ -5,8 +5,10 @@ const { hasRole, isAuth } = require('../../auth/auth.service')
 const controller = require('./contact-list.controller');
 
 router.get('/test', (req, res) => res.send('Test Contact list!'))
-router.get('/', hasRole('editor'), controller.index)
-router.post('/', isAuth(), controller.create)
-router.delete('/:id', isAuth(), controller.destroy)
+router.get('/', controller.index)
+router.post('/', controller.create)
+router.put('/:id', controller.update )
+router.delete('/:id', controller.destroy)
+router.get('/:_id', controller.showContactListsByUser)
 
 module.exports = router
