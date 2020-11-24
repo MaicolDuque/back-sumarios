@@ -7,6 +7,8 @@ const controller = require('./contact.controller');
 router.get('/test', (req, res) => res.send('Test Contact list!'))
 router.get('/', controller.index)
 router.post('/', controller.create)
-router.delete('/:contactid/:listid', controller.destroy)
+router.put('/:id', controller.update )
+router.delete('/:contactid', controller.destroy)
+router.get('/search/:_id', controller.contact)
 
 module.exports = router

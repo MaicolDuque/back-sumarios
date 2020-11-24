@@ -32,6 +32,17 @@ function showSummariesByUserId(req, res) {
 }
 
 /**
+ * Return all Summary by ID
+ */
+function showSummaryId(req, res) {
+  const { _id } = req.params
+  return Summary.findById(_id)
+    .populate({ select: { list_keywords: 0 }, path: 'list_articles', model: 'Article' }).exec()
+    .then(data => res.status(200).json(data))
+    .catch(handleError(res));
+}
+
+/**
  * Creates a new Summary
  */
 function create(req, res) {
@@ -41,8 +52,33 @@ function create(req, res) {
     .catch(validationError(res));
 }
 
+/**
+ * Update articles of the respective Summary
+ */
+function updatesArticlesByIdSummary(req, res) {
+  const { _id } = req.params
+  const { list_articles } = req.body;
+  return Summary.updateOne({ _id }, { $pull: { list_articles: { $nin: list_articles } } }).exec()
+    .then(data => res.status(201).json(data))
+    .catch(validationError(res));
+}
+
+/**
+ * Update info summary (name, description) by id summary
+ */
+function updatesInfoSummaryById(req, res) {
+  const { _id } = req.params
+  const { name, description = "", favorite = false } = req.body;
+  return Summary.findByIdAndUpdate(_id, { name, description, favorite }, { new: true } ).exec()
+    .then(data => res.status(201).json(data))
+    .catch(validationError(res));
+}
+
 module.exports = {
   index,
   create,
-  showSummariesByUserId
+  showSummariesByUserId,
+  showSummaryId,
+  updatesArticlesByIdSummary,
+  updatesInfoSummaryById
 }

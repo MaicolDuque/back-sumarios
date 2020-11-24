@@ -1,5 +1,4 @@
 const jwt = require('jsonwebtoken');
-EmailCtrl = require('../../email/mail.controller');
 const User = require('./user.model');
 const config = require('../../config');
 
@@ -17,9 +16,9 @@ function handleError(res, statusCode) {
  * Get list of users
  * restriction: 'admin'
  */
-const index = async (req, res) => {
-  await User.find({}).populate({ path: 'mg_contact_lists', model: 'ContactList' }).exec()
-    .then(users => { return res.status(200).json(users) })
+function index(req, res) {
+  return User.find({}).populate({ path: 'mg_contact_lists', model: 'ContactList' }).exec()
+    .then(users => res.status(200).json(users))
     .catch(handleError(res));
 }
 
@@ -30,31 +29,36 @@ function show(req, res) {
     .catch(handleError(res));
 }
 
+
 /**
  * 
  * Verify user
  */
 
-const verifyTrue = async (req, res) => {
+async function verifyTrue (req, res) {
   try {
-    await User.findOne(req.body).exec()
+    const { email } = req.body
+    await User.findOne({email})
+    .populate({select: { _id:1}, path: 'mg_contact_lists', model: 'ContactList', match:{name:"Default"} }).exec()
       .then(user => {
         if (user.mg_status) {
           const token = jwt.sign(
-            { _id: user._id, email: user.email },
+            { _id: user._id, email: user.email, mg_role: user.mg_role, mg_contact_lists: user.mg_contact_lists[0]._id, name_magazine: user.mg_name},
             config.secrets.session,
             { expiresIn: 60 * 60 * 5 },
           );
-          return res.json({ token: `Bearer ${token}` });
+          res.json({ token: `Bearer ${token}` });
         } else {
-          return res.json({
+          res.json({
+            caution: true,
             msg: 'Usuario no activo.'
           })
         }
       })
   } catch (error) {
     res.json({
-      msg: 'No se encontró usuario.'
+      error: true,
+      msg: 'Usuario no encontrado, verifique sus credenciales y vuelva a intentarlo.'
     })
   }
 }
@@ -66,7 +70,7 @@ const verifyTrue = async (req, res) => {
 function getVolumesByUserId(req, res) {
   const { id } = req.params
   return User.findOne({ _id: id }, { mg_list_volumes: 1, _id: 0 })
-        .populate({ select: { url: 1, description: 1 }, path: 'mg_list_volumes', model: 'Volume' }).exec()
+    .populate({ select: { url: 1, description: 1 }, path: 'mg_list_volumes', model: 'Volume' }).exec()
     .then(users => res.status(200).json(users))
     .catch(handleError(res));
 }
@@ -75,25 +79,24 @@ function getVolumesByUserId(req, res) {
 /**
  * Creates a new user
  */
-const create = async (req, res) => {
-  if(req.body !== ""){
+function create(req, res) {
+  if (req.body !== "") {
     const newPubliser = {
       mg_role: 'editor',
       mg_name: req.body.mg_name,
       email: req.body.email,
-      mg_status: true,
+      mg_status: false,
       mg_urlMagazine: req.body.mg_urlMagazine,
-      mg_contact_lists: ''
+      mg_contact_lists: []
     }
     const newUser = new User(newPubliser);
     return newUser.save()
       .then(
-        EmailCtrl.sendEmail(newPubliser),
         res => res.status(200).json({
-        msg: "Solicitud enviada"
-      }))
+          msg: "Solicitud enviada"
+        }))
       .catch(validationError(res));
-  } else{
+  } else {
     return res.json({
       error: "error",
       msg: "Ingrese la información correspondiente."
