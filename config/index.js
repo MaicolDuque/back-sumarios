@@ -25,8 +25,11 @@ const all = {
     session: process.env.SECRETS_SESSION,
   },
 
-  commonWords: stopWords,
+  //URL frontend app
+  url_front: process.env.URL_FRONT,
 
+  //List of stop words of the articles
+  commonWords: stopWords,
 
   userRoles: ['editor', 'admin'],
 
