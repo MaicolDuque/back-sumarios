@@ -1,22 +1,33 @@
 'use strict'
 
-// const rp = require('request-promise');
-// const cheerio = require('cheerio');
-// const fs = require('fs');
-// require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
 const cors = require('cors');
 const passport = require('passport');
+const config = require('./config')
 const mongoose = require('mongoose');
 const cookieSession = require('cookie-session')
 
 const configDB = require('./db');
 const routesConfig = require('./routes');
 
+// const whitelist = ['https://sumarios-poli.netlify.app', 'https://sumarios-elpoli.vercel.app', config.url_front]
+// const corsOptions = {
+//   origin: function (origin, callback) {
+//     if (whitelist.indexOf(origin) !== -1) {
+//       callback(null, true)
+//     } else {
+//       callback(new Error('Not allowed by CORS'))
+//     }
+//   },
+//   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+//   credentials: true // allow session cookie from browser to pass through
+// }
+
+
 app.use(cors({
-    origin: "http://localhost:9042", // allow to server to accept request from different origin
+    origin: 'https://sumarios-elpoli.vercel.app', // allow to server to accept request from different origin
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true // allow session cookie from browser to pass through
 }));
