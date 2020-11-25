@@ -40,12 +40,14 @@ function contact(req, res) {
  */
 function create(req, res) {
   const { c_name, c_email, id_lista, id_lista_default } = req.body
-  return Contact.findOne({ c_email }).exec()
+  return ContactList.findOne({_id: id_lista_default}, {mg_contacts:1})
+  .populate({select: {c_email:1}, path: 'mg_contacts', model: 'Contact', match:{c_email:c_email}}).exec()
     .then(result => {
-      if (result) {
+      if (result.mg_contacts.length > 0) {
         res.json({
           caution: true,
-          msg: 'El contacto que desea agregar ya existe.'
+          msg: 'El contacto que desea agregar ya existe.',
+          result: result
         })
       } else {
         const newContact = new Contact({ c_name, c_email });

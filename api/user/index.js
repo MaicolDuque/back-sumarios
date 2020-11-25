@@ -5,11 +5,13 @@ const router = new Router();
 
 router.get('/test', (req, res) => res.send('Example Home page!'))
 router.get('/',  controller.index);
+router.get('/pending', controller.getUserPending)
 router.post('/verify/', controller.verifyTrue)
 router.post('/create', controller.create )
-router.get('/:id', isAuth() , controller.show )
-router.put('/:id', isAuth() , controller.update )
-router.delete('/:id', isAuth() , controller.destroy )
+router.get('/:id', controller.show )
+router.put('/:id' , controller.update )
+router.put('/activate/:id', controller.updateStatus)
+router.delete('/:id', controller.destroy )
 router.get('/volumes/:id', controller.getVolumesByUserId )
 router.get('/segura', isAuth() ,  (req, res) => res.send('Example segura!'))
 
