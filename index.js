@@ -1,14 +1,11 @@
 'use strict'
 
-// const rp = require('request-promise');
-// const cheerio = require('cheerio');
-// const fs = require('fs');
-// require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
 const cors = require('cors');
 const passport = require('passport');
+const config = require('./config')
 const mongoose = require('mongoose');
 const cookieSession = require('cookie-session')
 
@@ -16,7 +13,7 @@ const configDB = require('./db');
 const routesConfig = require('./routes');
 
 app.use(cors({
-    origin: "http://localhost:9042", // allow to server to accept request from different origin
+    origin: config.url_front, // allow to server to accept request from different origin
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true // allow session cookie from browser to pass through
 }));
