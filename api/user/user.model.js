@@ -18,7 +18,7 @@ const UserSchema = new Schema({
   mg_urlMagazine: { type: String, required: true },
   mg_contact_lists: [{ type: Schema.Types.ObjectId, ref: "ContactList" }],
   mg_list_volumes: [{ type: Schema.Types.ObjectId, ref: "Volume" }],
-  // mg_contact_lists: [{ type: Schema.Types.ObjectId, ref: "ContactList", default: null }]
+  //mg_contact_lists: [{ type: Schema.Types.ObjectId, ref: "ContactList", default: null }]
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', UserSchema);
