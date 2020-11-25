@@ -13,10 +13,11 @@ const configDB = require('./db');
 const routesConfig = require('./routes');
 
 app.use(cors({
-    origin: config.url_front, // allow to server to accept request from different origin
-    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-    credentials: true // allow session cookie from browser to pass through
+  origin: config.url_front, // allow to server to accept request from different origin
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  credentials: true // allow session cookie from browser to pass through
 }));
+
 app.use(bodyParser.urlencoded({ extended: false, limit: '50mb' }));
 app.use(bodyParser.json({ limit: '50mb' }));
 
