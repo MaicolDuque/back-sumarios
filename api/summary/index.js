@@ -9,6 +9,7 @@ router.get('/', controller.index)
 router.get('/:_id', controller.showSummaryId)
 router.get('/user/:user_id', controller.showSummariesByUserId)
 router.post('/', controller.create)
+router.post('/keywords', controller.summariesByKeywords)
 router.put('/:_id', controller.updatesArticlesByIdSummary)
 router.put('/info/:_id', controller.updatesInfoSummaryById)
 
