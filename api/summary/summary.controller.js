@@ -53,6 +53,16 @@ function create(req, res) {
 }
 
 /**
+ * Retrieve summaries by userId and when it have de specific keywords
+ */
+function summariesByKeywords(req, res) {
+  const { user_id, keywords } = req.body
+  return Summary.find({ user_id, list_keywords: { $in: keywords }}).exec()
+    .then( data => res.status(200).json(data))
+    .catch(handleError(res))
+}
+
+/**
  * Update articles of the respective Summary
  */
 function updatesArticlesByIdSummary(req, res) {
@@ -80,5 +90,6 @@ module.exports = {
   showSummariesByUserId,
   showSummaryId,
   updatesArticlesByIdSummary,
-  updatesInfoSummaryById
+  updatesInfoSummaryById,
+  summariesByKeywords
 }
