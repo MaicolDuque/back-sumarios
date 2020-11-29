@@ -1,6 +1,7 @@
 
 const Article = require("./article.model");
 const Volume = require('../scraping/volume.model')
+const User = require('../user/user.model')
 
 function validationError(res, statusCode) {
   const statusCodeLocal = statusCode || 422;
@@ -51,13 +52,18 @@ function create(req, res) {
  */
 async function searchArticles(req, res) {
   try {
-    let { keyword } = req.body
+    let { keyword, idUser } = req.body
     keyword = keyword.trim().toUpperCase()
     const allKeywords = keyword.split(",")
     const keyword1 = allKeywords[0].trim()
     const keyword2 = allKeywords[1] ? allKeywords[1].trim() : null
     const keyword3 = allKeywords[2] ? allKeywords[2].trim() : null
-    const articles = await Article.find({}).exec()
+    // const articles = await Article.find({}).exec()
+    const articlesEditor = await User.findOne( { _id: idUser }, { mg_list_volumes: 1 } )
+                .populate({ select: { list_articles: 1, _id: 0 }, path: 'mg_list_volumes', model: 'Volume' })
+                .populate({ path: 'list_articles', model: 'Article' }).exec()
+    const articlesIds = articlesEditor.mg_list_volumes.map( volume => volume.list_articles ).flat() //Ids articles magazine editor
+    const articles = await Article.find({ _id: { $in: articlesIds } }).exec()
     console.log(articles.length)
     const ariclesWithKeyword = articles.filter(article => { //Select only the articles that have the keyword
       return article.list_keywords[0][keyword1] || article.list_keywords[0][keyword2] || article.list_keywords[0][keyword3]
@@ -78,7 +84,6 @@ async function searchArticles(req, res) {
     })
 
     const articlesSorted  =  orderArticlesDesc(infoArticlesOnlyKeyword, keyword1, keyword2, keyword3)
-    // console.log(articlesSorted)
     res.send(articlesSorted)
   } catch (error) {
     return handleError(res)

@@ -3,7 +3,7 @@ const { isAuth } = require('../../auth/auth.service');
 const controller = require('./user.controller');
 const router = new Router();
 
-router.get('/test', (req, res) => res.send('Example Home page!'))
+router.get('/test', (req, res) => res.status(200).json({ maicol: "Example Home page"}))
 router.get('/',  controller.index);
 router.get('/pending', controller.getUserPending)
 router.post('/verify/', controller.verifyTrue)
