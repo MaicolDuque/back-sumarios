@@ -1,25 +1,32 @@
 const assert = require('assert')
 const proxyquire = require('proxyquire')
 
-const { UserControllerMock } = require('../mocks/user/user.mock')
+const { index, test, userPending, getUserPending } = require('../mocks/user/user.mock')
 const mockListUsers = require('../mocks/user/list-users')
 const testServer = require('../testServer')
 
 describe('Routes - users', function(){
   const route = proxyquire('../../api/user', {
-    './user.controller': UserControllerMock
+    './user.controller': { index, test, getUserPending }
   })
 
   const request = testServer('/api/users', route)
-  describe('GET /api/users/test', function(){
+  describe('GET /api/users', function(){
 
-    it('should response with status 200', function(done){
+    it('Retornar estado 200 al consumir servicio', function(done){
       request.get('/api/users/test').expect(200, done)
     })
 
-    it('should response with list users', function(done){
+    it('Debería responder listado de usuarios', function(done){
       request.get('/api/users').end(( err, res ) => {
         assert.deepStrictEqual( res.body, mockListUsers )
+      })
+      done()
+    })
+
+    it('Debería responder listado de editores pendientes por activar', function(done){
+      request.get('/api/users/pending').end(( err, res ) => {
+        assert.deepStrictEqual( res.body, userPending )
       })
       done()
     })
